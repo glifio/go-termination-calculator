@@ -19,6 +19,8 @@
 # Stats - Activation (avg): 3395382
 # Stats - Age (avg): 164366
 
+set -x
+
 go run ./cmd \
   --epoch 3559748 \
   --sector-size 32 \
