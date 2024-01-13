@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"math/big"
 	"os"
@@ -19,7 +20,7 @@ func main() {
 var rootCmd = &cobra.Command{
 	Use:   "go-termination-calculator [options]",
 	Short: "Calculate the termination costs for a sector",
-	Args:  cobra.ExactArgs(1),
+	Args:  cobra.NoArgs,
 	Run: func(cmd *cobra.Command, args []string) {
 		epoch, err := cmd.Flags().GetUint64("epoch")
 		if err != nil {
@@ -81,6 +82,29 @@ var rootCmd = &cobra.Command{
 			log.Fatal(err)
 		}
 
+		expiration, err := cmd.Flags().GetUint64("expiration")
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		dealWght, err := cmd.Flags().GetString("deal-weight")
+		if err != nil {
+			log.Fatal(err)
+		}
+		dealWeight, ok := new(big.Int).SetString(dealWght, 10)
+		if !ok {
+			log.Fatal("Bad deal-weight")
+		}
+
+		verifiedDealWght, err := cmd.Flags().GetString("verified-deal-weight")
+		if err != nil {
+			log.Fatal(err)
+		}
+		verifiedDealWeight, ok := new(big.Int).SetString(verifiedDealWght, 10)
+		if !ok {
+			log.Fatal("Bad verified-deal-weight")
+		}
+
 		expectedDayRew, err := cmd.Flags().GetString("expected-day-reward")
 		if err != nil {
 			log.Fatal(err)
@@ -113,7 +137,7 @@ var rootCmd = &cobra.Command{
 			log.Fatal("Bad replaced-day-reward")
 		}
 
-		terminate.TerminateSector(
+		burn, err := terminate.TerminateSector(
 			epoch,
 			sectorSize,
 			qapPosition,
@@ -121,11 +145,18 @@ var rootCmd = &cobra.Command{
 			rewardPosition,
 			rewardVelocity,
 			activation,
+			expiration,
+			dealWeight,
+			verifiedDealWeight,
 			expectedDayReward,
 			expectedStoragePledge,
 			powerBaseEpoch,
 			replacedDayReward,
 		)
+		if err != nil {
+			log.Fatal(err)
+		}
+		fmt.Printf("%v\n", burn)
 	},
 }
 
@@ -137,6 +168,9 @@ func init() {
 	rootCmd.Flags().String("reward-position", "", "")
 	rootCmd.Flags().String("reward-velocity", "", "")
 	rootCmd.Flags().Uint64("activation", 0, "")
+	rootCmd.Flags().Uint64("expiration", 0, "")
+	rootCmd.Flags().String("deal-weight", "", "")
+	rootCmd.Flags().String("verified-deal-weight", "", "")
 	rootCmd.Flags().String("expected-day-reward", "", "")
 	rootCmd.Flags().String("expected-storage-pledge", "", "")
 	rootCmd.Flags().Uint64("power-base-epoch", 0, "")

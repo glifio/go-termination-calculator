@@ -1,7 +1,6 @@
 package terminate
 
 import (
-	"fmt"
 	corebig "math/big"
 
 	"github.com/filecoin-project/go-state-types/abi"
@@ -20,6 +19,9 @@ func TerminateSector(
 	rewardSmoothedPositionEstimate *corebig.Int,
 	rewardSmoothedVelocityEstimate *corebig.Int,
 	activation uint64,
+	expiration uint64,
+	dealWeight *corebig.Int,
+	verifiedDealWeight *corebig.Int,
 	expectedDayReward *corebig.Int,
 	expectedStoragePledge *corebig.Int,
 	powerBaseEpoch uint64,
@@ -47,13 +49,15 @@ func TerminateSector(
 
 	s := &miner.SectorOnChainInfo{
 		Activation:            abi.ChainEpoch(activation),
+		Expiration:            abi.ChainEpoch(expiration),
+		DealWeight:            abi.DealWeight(big.NewFromGo(dealWeight)),
+		VerifiedDealWeight:    abi.DealWeight(big.NewFromGo(verifiedDealWeight)),
 		ExpectedDayReward:     big.NewFromGo(expectedDayReward),
 		ExpectedStoragePledge: big.NewFromGo(expectedStoragePledge),
 		PowerBaseEpoch:        abi.ChainEpoch(powerBaseEpoch),
 		ReplacedDayReward:     big.NewFromGo(replacedDayReward),
 	}
 
-	fmt.Printf("Jim sector: %+v\n", s)
 	sectorPower := miner8.QAPowerForSector(abi.SectorSize(sectorSize), ConvertSectorType(s))
 
 	// the termination penalty calculation
@@ -71,4 +75,22 @@ func TerminateSector(
 	)
 
 	return termFee.Int, nil
+}
+
+func ConvertSectorType(sector *miner.SectorOnChainInfo) *miner8.SectorOnChainInfo {
+	return &miner8.SectorOnChainInfo{
+		SectorNumber:          sector.SectorNumber,
+		SealProof:             sector.SealProof,
+		SealedCID:             sector.SealedCID,
+		DealIDs:               sector.DealIDs,
+		Activation:            sector.Activation,
+		Expiration:            sector.Expiration,
+		DealWeight:            sector.DealWeight,
+		VerifiedDealWeight:    sector.VerifiedDealWeight,
+		InitialPledge:         sector.InitialPledge,
+		ExpectedDayReward:     sector.ExpectedDayReward,
+		ExpectedStoragePledge: sector.ExpectedStoragePledge,
+		ReplacedDayReward:     sector.ReplacedDayReward,
+		SectorKeyCID:          sector.SectorKeyCID,
+	}
 }
