@@ -22,6 +22,10 @@ go run ./cmd \
 16871186150637184
 ```
 
+# See also
+
+* https://github.com/jimpick/rust-termination-calculator
+
 # License
 
 Apache 2
