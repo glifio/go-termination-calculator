@@ -6,7 +6,7 @@ import (
 	"math/big"
 	"os"
 
-	terminate "github.com/jimpick/go-termination-calculator"
+	terminate "github.com/glifio/go-termination-calculator"
 	"github.com/spf13/cobra"
 )
 

@@ -24,7 +24,7 @@ go run ./cmd \
 
 # See also
 
-* https://github.com/jimpick/rust-termination-calculator
+* https://github.com/glifio/rust-termination-calculator
 
 # License
 
