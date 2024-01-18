@@ -1,8 +1,15 @@
 #! /bin/bash
 
-MINER=f0141634
-EPOCH=3571596
-SECTOR=46158
+#MINER=f0141634
+#EPOCH=3573724
+#SECTOR=46158
+
+# GLIF won't work, needs patch: https://api.node.glif.io/rpc/v1
+RPC_URL=http://192.168.1.246:1234/rpc/v1
+
+MINER=f01919423
+EPOCH=3574050
+SECTOR=6803
 
 # Off-chain:
 # Miner: f01619524
@@ -30,7 +37,7 @@ mkdir -p tmp
 curl -s -X POST \
      -H "Content-Type: application/json" \
      --data @- \
-     'https://api.node.glif.io/rpc/v1' <<EOF | jq -c '.result.Cids' > tmp/cids.txt
+     $RPC_URL <<EOF | jq -c '.result.Cids' > tmp/cids.txt
 {
   "jsonrpc":"2.0",
   "id":1,
@@ -48,7 +55,7 @@ echo Tipset: $CIDS
 curl -s -X POST \
      -H "Content-Type: application/json" \
      --data @- \
-     'https://api.node.glif.io/rpc/v1' <<EOF | jq '.result.State.ThisEpochRewardSmoothed' > tmp/reward.json
+     $RPC_URL <<EOF | jq '.result.State.ThisEpochRewardSmoothed' > tmp/reward.json
 {
   "jsonrpc":"2.0",
   "id":1,
@@ -68,7 +75,7 @@ REWARD_VELOCITY=$(cat tmp/reward.json | jq -r .VelocityEstimate)
 curl -s -X POST \
      -H "Content-Type: application/json" \
      --data @- \
-     'https://api.node.glif.io/rpc/v1' <<EOF | jq '.result.State.ThisEpochQAPowerSmoothed' > tmp/power.json
+     $RPC_URL <<EOF | jq '.result.State.ThisEpochQAPowerSmoothed' > tmp/power.json
 {
   "jsonrpc":"2.0",
   "id":1,
@@ -89,7 +96,7 @@ QAP_VELOCITY=$(cat tmp/power.json | jq -r .VelocityEstimate)
 curl -s -X POST \
      -H "Content-Type: application/json" \
      --data @- \
-     'https://api.node.glif.io/rpc/v1' <<EOF | jq -r '.result.SectorSize' | perl -e 'while (<>) { print $_ / 1024**3 }' > tmp/sector-size.txt
+     $RPC_URL <<EOF | jq -r '.result.SectorSize' | perl -e 'while (<>) { print $_ / 1024**3 }' > tmp/sector-size.txt
 {
   "jsonrpc":"2.0",
   "id":1,
@@ -108,7 +115,7 @@ echo Sector Size: $SECTOR_SIZE
 curl -s -X POST \
      -H "Content-Type: application/json" \
      --data @- \
-     'https://api.node.glif.io/rpc/v1' <<EOF | jq -r '.result' > tmp/sector-info.json
+     $RPC_URL <<EOF | jq -r '.result' > tmp/sector-info.json
 {
   "jsonrpc":"2.0",
   "id":1,
@@ -128,7 +135,8 @@ DEAL_WEIGHT=$(cat tmp/sector-info.json | jq -r .DealWeight)
 VERIFIED_DEAL_WEIGHT=$(cat tmp/sector-info.json | jq -r .VerifiedDealWeight)
 EXPECTED_DAY_REWARD=$(cat tmp/sector-info.json | jq -r .ExpectedDayReward)
 EXPECTED_STORAGE_PLEDGE=$(cat tmp/sector-info.json | jq -r .ExpectedStoragePledge)
-POWER_BASE_EPOCH=$(cat tmp/sector-info.json | jq -r .ReplacedSectorAge) # Renamed
+#POWER_BASE_EPOCH=$(cat tmp/sector-info.json | jq -r .ReplacedSectorAge) # Renamed
+POWER_BASE_EPOCH=$(cat tmp/sector-info.json | jq -r .PowerBaseEpoch)
 REPLACED_DAY_REWARD=$(cat tmp/sector-info.json | jq -r .ReplacedDayReward) 
 echo
 
